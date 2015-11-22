@@ -13,6 +13,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	repo, err := reeds.NewReedsRepo("localhost", "test", "reedstest")
 	if err != nil {
 		fmt.Fprintf(w, "Could not connect to mongodb")
+		return
 	}
 
 	reed := reeds.Reed{"Mostly harmless"}
