@@ -1,5 +1,14 @@
 package reeds
 
+import (
+    "time"
+)
+
 type Reed struct {
-    ArticleName string
+    Title string
+    Excerpt string
+    ImageUrl string
+    Url string
+    AddedAt time.Time
+    CompletedAt time.Time
 }
