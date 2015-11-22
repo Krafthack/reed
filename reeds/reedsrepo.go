@@ -1,23 +1,23 @@
 package reeds
 
 import (
-    "log"
-    "gopkg.in/mgo.v2"
+	"log"
+
+	"gopkg.in/mgo.v2"
 )
 
 type ReedsRepo struct {
-    reeds *mgo.Collection
+	reeds *mgo.Collection
 }
 
 func NewReedsRepo(host string, db string, collection string) (ReedsRepo, error) {
 
-    session, err := mgo.Dial(host)
-    if err != nil {
-        log.Fatal(err)
-        return ReedsRepo{}, err
-    }
+	session, err := mgo.Dial(host)
+	if err != nil {
+		log.Println(err)
+		return ReedsRepo{}, err
+	}
+	reeds := session.DB(db).C(collection)
 
-    reeds := session.DB(db).C(collection)
-
-    return ReedsRepo{ reeds }, nil
+	return ReedsRepo{reeds}, nil
 }

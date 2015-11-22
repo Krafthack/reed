@@ -5,11 +5,26 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gorilla/mux"
+	"github.com/krafthack/reed/Godeps/_workspace/src/github.com/gorilla/mux"
+	"github.com/krafthack/reed/reeds"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
+	repo, err := reeds.NewReedsRepo("localhost", "test", "reedstest")
+	if err != nil {
+		fmt.Fprintf(w, "Could not connect to mongodb")
+	}
+
+	reed := reeds.Reed{"Mostly harmless"}
+
+	err = repo.Store(&reed)
+
+	if err != nil {
+		fmt.Fprintf(w, "Could not save Mostly harmless")
+	} else {
+		fmt.Fprintf(w, "Mostly harmless was saved")
+	}
+
 }
 
 func main() {
@@ -17,6 +32,7 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", handler)
+
 	http.Handle("/", r)
 
 	http.ListenAndServe(":"+port, nil)
