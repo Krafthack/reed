@@ -2,36 +2,68 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"time"
+
+	"encoding/json"
 
 	"github.com/krafthack/reed/Godeps/_workspace/src/github.com/gorilla/mux"
 	"github.com/krafthack/reed/reeds"
 )
 
+type IftttReeds struct {
+	Title    string `json:"title"`
+	URL      string `json:"url"`
+	Excerpt  string `json:"excerpt"`
+	ImageURL string `json:"imageUrl"`
+	Tags     string `json:"tags"`
+	AddedAt  string `json:"addedAt"`
+}
+
+func parse(body io.Reader) (*IftttReeds, error) {
+	decoder := json.NewDecoder(body)
+	var i IftttReeds
+	err := decoder.Decode(&i)
+	if err != nil {
+		return nil, err
+	}
+	return &i, nil
+}
+
 func handler(w http.ResponseWriter, r *http.Request) {
+
+	body, err := parse(r.Body)
+
+	if err != nil {
+		fmt.Fprintln(w, "Could not parse input")
+		return
+	}
+
 	repo, err := reeds.NewReedsRepo("localhost", "test", "reedstest")
 	if err != nil {
 		fmt.Fprintf(w, "Could not connect to mongodb")
 		return
 	}
 
+	fmt.Printf("%v", body)
+
 	reed := reeds.Reed{
-		"Rarely say yes to feature requests",
-		"Here’s a simple set of Yes/No questions that you can quickly answer before you add another item to your product roadmap.  Saying yes to a feature request – whether it’s a to an existing customer, a product enquiry, a teammate, or a manager – is immediately rewarding.",
-		"https://blog.intercom.io/wp-content/uploads/2014/11/Rarely-Say-Yes-984.jpg",
-		"https://blog.intercom.io/rarely-say-yes-to-feature-requests/?utm_medium=email&utm_source=email&utm_campaign=say-no-email",
-		time.Now().Add(-time.Hour * 24 * 3),
+		body.Title,
+		body.Excerpt,
+		body.ImageURL,
+		body.URL,
+		time.Now(),
 		time.Now(),
 	}
 
 	err = repo.Store(&reed)
 
 	if err != nil {
-		fmt.Fprintf(w, "Could not save Mostly harmless")
+		fmt.Fprintf(w, "Could not save %v", body.Title)
 	} else {
-		fmt.Fprintf(w, "Mostly harmless was saved")
+		fmt.Fprintf(w, "%v was saved", body.Title)
 	}
 
 }
